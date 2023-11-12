@@ -41,9 +41,10 @@ class CommentModelViewSet(ModelViewSet):
     pagination_class=None
     serializer_class = CommentListSerializer
 
+
     def get_queryset(self):
         post_pk = self.kwargs['post_pk']  # URL 매개변수에서 post_pk 가져오기
-        return Comment.objects.filter(post=post_pk)
+        return Comment.objects.filter(post=post_pk).order_by('-id')
     
     def get_serializer_class(self):
         if self.request.method in ['GET', 'RETRIEVE']:
@@ -99,4 +100,10 @@ class PostLikeAPIView(GenericAPIView):
         Like.objects.create(post=post, ip=request.META.get('REMOTE_ADDR'))
         post.likes += 1
         post.save()
-        return Response({"message": "좋아요가 추가되었습니다.","likes": self.get_object().likes}, status=400)
+        return Response({"message": "좋아요가 추가되었습니다.","likes": self.get_object().likes}, status=200)
+
+class PostLikeShowAPIView(GenericAPIView):
+    queryset = Post.objects.all()
+    lookup_field = 'id' 
+    def get(self, request, id, *args, **kwargs):
+        return Response({"likes": self.get_object().likes}, status=200)
